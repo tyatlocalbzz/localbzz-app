@@ -3,6 +3,7 @@ import { Shell } from '@/components/layout/Shell'
 import { Dashboard } from '@/pages/Dashboard'
 import { Clients } from '@/pages/Clients'
 import { ClientDetail } from '@/pages/ClientDetail'
+import { ClientSettings } from '@/pages/ClientSettings'
 import { Workflows } from '@/pages/Workflows'
 import { Settings } from '@/pages/Settings'
 
@@ -13,6 +14,7 @@ function App() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/clients" element={<Clients />} />
         <Route path="/clients/:id" element={<ClientDetail />} />
+        <Route path="/clients/:id/settings" element={<ClientSettings />} />
         <Route path="/workflows" element={<Workflows />} />
         <Route path="/settings" element={<Settings />} />
       </Route>

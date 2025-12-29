@@ -1,26 +1,36 @@
 import { useState, useEffect } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
-import { ArrowLeft, FileText, Calendar, Settings } from 'lucide-react'
+import { ArrowLeft, FileText, Calendar, Settings, Rocket, Repeat, Briefcase } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuCheckboxItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { useClient, useUpdateClient } from '@/hooks/useClients'
+import { useClient } from '@/hooks/useClients'
 import { useTasks } from '@/hooks/useTasks'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { useWorkflowTemplates } from '@/hooks/useWorkflow'
 import { useAutoGenerateTasks } from '@/hooks/useAutoGenerateTasks'
 import { TaskTimeline } from '@/components/tasks/TaskTimeline'
 import { TaskWorkspace } from '@/components/tasks/TaskWorkspace'
 import { AddTaskDialog } from '@/components/tasks/AddTaskDialog'
+import type { ClientPhase } from '@/lib/database.types'
+
+const PHASE_CONFIG: Record<ClientPhase, { label: string; icon: typeof Rocket; className: string }> = {
+  foundations: {
+    label: 'The Foundations',
+    icon: Rocket,
+    className: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
+  },
+  monthly: {
+    label: 'Monthly',
+    icon: Repeat,
+    className: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+  },
+  project: {
+    label: 'Project',
+    icon: Briefcase,
+    className: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800',
+  },
+}
 
 export function ClientDetail() {
   const { id } = useParams<{ id: string }>()
@@ -30,8 +40,6 @@ export function ClientDetail() {
 
   const { data: client, isLoading: clientLoading } = useClient(id)
   const { data: tasks, isLoading: tasksLoading } = useTasks(id)
-  const { data: templates } = useWorkflowTemplates()
-  const updateClient = useUpdateClient()
   const { isGenerating, isEnabled } = useAutoGenerateTasks(id)
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
@@ -123,6 +131,10 @@ export function ClientDetail() {
     }
 
     // List View (Timeline)
+    const mobilePhase = client.client_phase || 'monthly'
+    const mobilePhaseConfig = PHASE_CONFIG[mobilePhase]
+    const MobilePhaseIcon = mobilePhaseConfig.icon
+
     return (
       <div className="space-y-4">
         {/* Header */}
@@ -135,13 +147,14 @@ export function ClientDetail() {
             </Button>
             <div>
               <h1 className="text-xl font-bold">{client.name}</h1>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 text-sm">
                 <Badge variant={client.status === 'active' ? 'success' : 'secondary'}>
                   {client.status}
                 </Badge>
-                {client.package_tier && (
-                  <span>{client.package_tier}</span>
-                )}
+                <Badge variant="outline" className={mobilePhaseConfig.className}>
+                  <MobilePhaseIcon className="mr-1 h-3 w-3" />
+                  {mobilePhaseConfig.label}
+                </Badge>
               </div>
             </div>
           </div>
@@ -156,42 +169,16 @@ export function ClientDetail() {
                 Auto
               </Badge>
             )}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Auto-Schedule</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuCheckboxItem
-                  checked={client.auto_workflow_enabled ?? false}
-                  onCheckedChange={(checked) =>
-                    updateClient.mutate({ id: id!, auto_workflow_enabled: checked })
-                  }
-                >
-                  Enable monthly auto-generation
-                </DropdownMenuCheckboxItem>
-                {client.auto_workflow_enabled && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuLabel className="text-xs">Template</DropdownMenuLabel>
-                    {templates?.map((t) => (
-                      <DropdownMenuCheckboxItem
-                        key={t.id}
-                        checked={client.default_template_id === t.id}
-                        onCheckedChange={() =>
-                          updateClient.mutate({ id: id!, default_template_id: t.id })
-                        }
-                      >
-                        {t.name}
-                      </DropdownMenuCheckboxItem>
-                    ))}
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {!isEnabled && client.status !== 'active' && (
+              <Badge variant="outline" className="text-yellow-600">
+                {client.status === 'paused' ? 'Paused' : 'Inactive'}
+              </Badge>
+            )}
+            <Button variant="ghost" size="icon" asChild>
+              <Link to={`/clients/${id}/settings`}>
+                <Settings className="h-4 w-4" />
+              </Link>
+            </Button>
             <AddTaskDialog clientId={id!} />
           </div>
         </div>
@@ -240,13 +227,21 @@ export function ClientDetail() {
           </Button>
           <div>
             <h1 className="text-2xl font-bold">{client.name}</h1>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm">
               <Badge variant={client.status === 'active' ? 'success' : 'secondary'}>
                 {client.status}
               </Badge>
-              {client.package_tier && (
-                <span>{client.package_tier}</span>
-              )}
+              {(() => {
+                const desktopPhase = client.client_phase || 'monthly'
+                const desktopPhaseConfig = PHASE_CONFIG[desktopPhase]
+                const DesktopPhaseIcon = desktopPhaseConfig.icon
+                return (
+                  <Badge variant="outline" className={desktopPhaseConfig.className}>
+                    <DesktopPhaseIcon className="mr-1 h-3 w-3" />
+                    {desktopPhaseConfig.label}
+                  </Badge>
+                )
+              })()}
             </div>
           </div>
         </div>
@@ -261,42 +256,16 @@ export function ClientDetail() {
               Auto-schedule on
             </Badge>
           )}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Settings className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Auto-Schedule</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuCheckboxItem
-                checked={client.auto_workflow_enabled ?? false}
-                onCheckedChange={(checked) =>
-                  updateClient.mutate({ id: id!, auto_workflow_enabled: checked })
-                }
-              >
-                Enable monthly auto-generation
-              </DropdownMenuCheckboxItem>
-              {client.auto_workflow_enabled && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-xs">Template</DropdownMenuLabel>
-                  {templates?.map((t) => (
-                    <DropdownMenuCheckboxItem
-                      key={t.id}
-                      checked={client.default_template_id === t.id}
-                      onCheckedChange={() =>
-                        updateClient.mutate({ id: id!, default_template_id: t.id })
-                      }
-                    >
-                      {t.name}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {!isEnabled && client.status !== 'active' && (
+            <Badge variant="outline" className="text-yellow-600">
+              {client.status === 'paused' ? 'Paused' : 'Inactive'}
+            </Badge>
+          )}
+          <Button variant="ghost" size="icon" asChild>
+            <Link to={`/clients/${id}/settings`}>
+              <Settings className="h-4 w-4" />
+            </Link>
+          </Button>
           <AddTaskDialog clientId={id!} />
         </div>
       </div>

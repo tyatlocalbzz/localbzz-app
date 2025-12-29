@@ -18,7 +18,12 @@ export function useAutoGenerateTasks(clientId: string | undefined) {
   const { data: tasks } = useTasks(clientId)
   const runWorkflow = useRunWorkflow()
 
-  const isEnabled = !!(client?.auto_workflow_enabled && client?.default_template_id)
+  // Auto-schedule only runs for ACTIVE clients with workflow enabled and template set
+  const isEnabled = !!(
+    client?.auto_workflow_enabled &&
+    client?.default_template_id &&
+    client?.status === 'active'
+  )
 
   useEffect(() => {
     // Reset trigger flag when clientId changes

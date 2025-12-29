@@ -9,20 +9,20 @@
 -- CLIENTS (6 test clients with various statuses)
 -- ==========================================
 
-INSERT INTO clients (id, name, status, package_tier, notes, auto_workflow_enabled, default_template_id) VALUES
+INSERT INTO clients (id, name, status, client_phase, notes, auto_workflow_enabled, default_template_id) VALUES
   -- Active clients (with auto-workflow enabled)
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Sunrise Bakery', 'active', 'Premium', 'Local bakery chain, 3 locations. Monthly content for all stores.', true, '11111111-1111-1111-1111-111111111111'),
-  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Peak Fitness Studio', 'active', 'Standard', 'Boutique gym. Focus on transformation stories and class promos.', true, '11111111-1111-1111-1111-111111111111'),
-  ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Verde Garden Center', 'active', 'Premium', 'Garden center with seasonal campaigns. Heavy Q2/Q3.', false, NULL),
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Sunrise Bakery', 'active', 'monthly', 'Local bakery chain, 3 locations. Monthly content for all stores.', true, '11111111-1111-1111-1111-111111111111'),
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Peak Fitness Studio', 'active', 'foundations', 'Boutique gym. Focus on transformation stories and class promos.', true, '11111111-1111-1111-1111-111111111111'),
+  ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Verde Garden Center', 'active', 'monthly', 'Garden center with seasonal campaigns. Heavy Q2/Q3.', false, NULL),
 
   -- Lead (potential client)
-  ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'Coastal Realty Group', 'lead', NULL, 'Real estate agency interested in property video tours.', false, NULL),
+  ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'Coastal Realty Group', 'lead', 'project', 'Real estate agency interested in property video tours.', false, NULL),
 
   -- Paused client
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'Brew Brothers Coffee', 'paused', 'Standard', 'Paused for renovation. Resuming March 2025.', false, NULL),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'Brew Brothers Coffee', 'paused', 'monthly', 'Paused for renovation. Resuming March 2025.', false, NULL),
 
   -- Churned client
-  ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'TechStart Inc', 'churned', 'Basic', 'Moved in-house. Good relationship, may return.', false, NULL);
+  ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'TechStart Inc', 'churned', 'monthly', 'Moved in-house. Good relationship, may return.', false, NULL);
 
 
 -- ==========================================

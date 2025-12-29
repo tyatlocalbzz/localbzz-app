@@ -42,6 +42,7 @@ export type Database = {
       clients: {
         Row: {
           auto_workflow_enabled: boolean | null
+          client_phase: Database["public"]["Enums"]["client_phase"] | null
           created_at: string | null
           default_editor_id: string | null
           default_photographer_id: string | null
@@ -54,6 +55,7 @@ export type Database = {
         }
         Insert: {
           auto_workflow_enabled?: boolean | null
+          client_phase?: Database["public"]["Enums"]["client_phase"] | null
           created_at?: string | null
           default_editor_id?: string | null
           default_photographer_id?: string | null
@@ -66,6 +68,7 @@ export type Database = {
         }
         Update: {
           auto_workflow_enabled?: boolean | null
+          client_phase?: Database["public"]["Enums"]["client_phase"] | null
           created_at?: string | null
           default_editor_id?: string | null
           default_photographer_id?: string | null
@@ -308,7 +311,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      client_phase: "foundations" | "monthly" | "project"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -438,7 +441,9 @@ export const Constants = {
     Enums: {},
   },
   public: {
-    Enums: {},
+    Enums: {
+      client_phase: ["foundations", "monthly", "project"],
+    },
   },
 } as const
 
@@ -458,6 +463,9 @@ export type WorkflowTemplateUpdate = TablesUpdate<'workflow_templates'>
 export type WorkflowStep = Tables<'workflow_steps'>
 export type WorkflowStepInsert = TablesInsert<'workflow_steps'>
 export type WorkflowStepUpdate = TablesUpdate<'workflow_steps'>
+
+// Enum types
+export type ClientPhase = Database['public']['Enums']['client_phase']
 
 // View types
 export type TaskHealth = Database['public']['Views']['admin_task_health']['Row']

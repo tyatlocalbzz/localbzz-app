@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Building2, ChevronRight } from 'lucide-react'
+import { Plus, Building2, ChevronRight, Rocket, Repeat, Briefcase } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -24,13 +24,31 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useClients, useCreateClient } from '@/hooks/useClients'
-import type { Client } from '@/lib/database.types'
+import type { Client, ClientPhase } from '@/lib/database.types'
 
 const STATUS_BADGE_VARIANT: Record<string, 'success' | 'secondary' | 'warning' | 'danger'> = {
   active: 'success',
   lead: 'secondary',
   paused: 'warning',
   churned: 'danger',
+}
+
+const PHASE_CONFIG: Record<ClientPhase, { label: string; icon: typeof Rocket; className: string }> = {
+  foundations: {
+    label: 'The Foundations',
+    icon: Rocket,
+    className: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
+  },
+  monthly: {
+    label: 'Monthly',
+    icon: Repeat,
+    className: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+  },
+  project: {
+    label: 'Project',
+    icon: Briefcase,
+    className: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800',
+  },
 }
 
 export function Clients() {
@@ -100,20 +118,27 @@ export function Clients() {
 }
 
 function ClientCard({ client }: { client: Client }) {
+  const phase = client.client_phase || 'monthly'
+  const phaseConfig = PHASE_CONFIG[phase]
+  const PhaseIcon = phaseConfig.icon
+
   return (
     <Link to={`/clients/${client.id}`}>
       <Card className="hover:bg-muted/50 transition-colors cursor-pointer">
         <CardContent className="p-6">
           <div className="flex items-start justify-between">
-            <div className="space-y-1">
+            <div className="space-y-2">
               <h3 className="font-semibold leading-none">{client.name}</h3>
-              <p className="text-sm text-muted-foreground">
-                {client.package_tier || 'No package'}
-              </p>
+              <div className="flex items-center gap-2">
+                <Badge variant={STATUS_BADGE_VARIANT[client.status || 'active'] || 'secondary'}>
+                  {client.status || 'active'}
+                </Badge>
+                <Badge variant="outline" className={phaseConfig.className}>
+                  <PhaseIcon className="mr-1 h-3 w-3" />
+                  {phaseConfig.label}
+                </Badge>
+              </div>
             </div>
-            <Badge variant={STATUS_BADGE_VARIANT[client.status || 'active'] || 'secondary'}>
-              {client.status || 'active'}
-            </Badge>
           </div>
           <div className="mt-4 flex items-center text-sm text-muted-foreground">
             <span>View details</span>
@@ -129,7 +154,7 @@ function AddClientDialog() {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [status, setStatus] = useState('active')
-  const [packageTier, setPackageTier] = useState('')
+  const [phase, setPhase] = useState<ClientPhase>('monthly')
   const createClient = useCreateClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,12 +163,12 @@ function AddClientDialog() {
     await createClient.mutateAsync({
       name,
       status,
-      package_tier: packageTier || null,
+      client_phase: phase,
     })
 
     setName('')
     setStatus('active')
-    setPackageTier('')
+    setPhase('monthly')
     setOpen(false)
   }
 
@@ -189,13 +214,32 @@ function AddClientDialog() {
               </Select>
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="package">Package Tier</Label>
-              <Input
-                id="package"
-                value={packageTier}
-                onChange={(e) => setPackageTier(e.target.value)}
-                placeholder="e.g., Standard, Premium"
-              />
+              <Label htmlFor="phase">Operational Phase</Label>
+              <Select value={phase} onValueChange={(v) => setPhase(v as ClientPhase)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="foundations">
+                    <div className="flex items-center gap-2">
+                      <Rocket className="h-4 w-4 text-purple-600" />
+                      The Foundations
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="monthly">
+                    <div className="flex items-center gap-2">
+                      <Repeat className="h-4 w-4 text-blue-600" />
+                      Monthly
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="project">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="h-4 w-4 text-orange-600" />
+                      Project
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
