@@ -107,9 +107,9 @@ Deno.serve(async (req) => {
           assignedTo = client.default_editor_id
           break
         case 'admin':
-          // For admin, we'd need to fetch an admin user or leave null
-          // For now, use photographer as fallback
-          assignedTo = client.default_photographer_id
+          // Leave as null so it appears in "Red Flags" on Dashboard
+          // Admin tasks require manual assignment
+          assignedTo = null
           break
       }
 

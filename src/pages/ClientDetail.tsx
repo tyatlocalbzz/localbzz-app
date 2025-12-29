@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
 import { useClient } from '@/hooks/useClients'
 import { useTasks } from '@/hooks/useTasks'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { TaskTimeline } from '@/components/tasks/TaskTimeline'
 import { TaskWorkspace } from '@/components/tasks/TaskWorkspace'
 import { AddTaskDialog } from '@/components/tasks/AddTaskDialog'
@@ -15,6 +17,7 @@ export function ClientDetail() {
   const { id } = useParams<{ id: string }>()
   const [searchParams] = useSearchParams()
   const taskIdFromUrl = searchParams.get('task')
+  const isMobile = useIsMobile()
 
   const { data: client, isLoading: clientLoading } = useClient(id)
   const { data: tasks, isLoading: tasksLoading } = useTasks(id)
@@ -89,15 +92,15 @@ export function ClientDetail() {
         <AddTaskDialog clientId={id!} />
       </div>
 
-      {/* Two-column layout */}
+      {/* Layout: Desktop = Split View, Mobile = Timeline + Bottom Sheet */}
       <div className="grid gap-6 lg:grid-cols-5">
-        {/* Left: Timeline */}
-        <div className="lg:col-span-2">
-          <Card className="h-[calc(100vh-220px)] overflow-hidden">
+        {/* Left: Timeline (Always visible) */}
+        <div className={isMobile ? 'col-span-full' : 'lg:col-span-2'}>
+          <Card className={isMobile ? 'h-[calc(100vh-200px)]' : 'h-[calc(100vh-220px)]'} >
             <CardHeader className="pb-3">
               <CardTitle className="text-lg">Timeline</CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent className="p-0 h-[calc(100%-60px)] overflow-hidden">
               {tasksLoading ? (
                 <div className="p-4 space-y-3">
                   {[1, 2, 3, 4, 5].map((i) => (
@@ -121,24 +124,35 @@ export function ClientDetail() {
           </Card>
         </div>
 
-        {/* Right: Workspace */}
-        <div className="lg:col-span-3">
-          <Card className="h-[calc(100vh-220px)] overflow-hidden">
-            <CardContent className="p-0 h-full">
-              {selectedTask ? (
-                <TaskWorkspace task={selectedTask} />
-              ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground">
-                  <div className="text-center">
-                    <FileText className="mx-auto h-12 w-12 opacity-50" />
-                    <p className="mt-4">Select a task to view details</p>
+        {/* Right: Workspace - Desktop only (split view) */}
+        {!isMobile && (
+          <div className="lg:col-span-3">
+            <Card className="h-[calc(100vh-220px)] overflow-hidden">
+              <CardContent className="p-0 h-full">
+                {selectedTask ? (
+                  <TaskWorkspace task={selectedTask} />
+                ) : (
+                  <div className="h-full flex items-center justify-center text-muted-foreground">
+                    <div className="text-center">
+                      <FileText className="mx-auto h-12 w-12 opacity-50" />
+                      <p className="mt-4">Select a task to view details</p>
+                    </div>
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
+
+      {/* Mobile: Bottom Sheet for Task Details */}
+      {isMobile && (
+        <Sheet open={!!selectedTask} onOpenChange={(open) => !open && setSelectedTaskId(null)}>
+          <SheetContent side="bottom" className="h-[85vh] p-0 rounded-t-xl overflow-hidden">
+            {selectedTask && <TaskWorkspace task={selectedTask} />}
+          </SheetContent>
+        </Sheet>
+      )}
     </div>
   )
 }

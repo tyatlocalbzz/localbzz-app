@@ -1,8 +1,7 @@
 import { NavLink } from 'react-router-dom'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { LayoutDashboard, Users, Workflow, Settings, X } from 'lucide-react'
+import { Sheet, SheetContent } from '@/components/ui/sheet'
+import { LayoutDashboard, Users, Workflow, Settings } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -18,16 +17,12 @@ interface MobileSidebarProps {
 
 export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="fixed inset-y-0 left-0 z-50 w-full max-w-xs overflow-y-auto bg-background p-0 sm:max-w-sm">
-        <div className="flex h-16 shrink-0 items-center justify-between px-6">
-          <span className="text-xl font-bold">LocalBzz</span>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-6 w-6" />
-            <span className="sr-only">Close sidebar</span>
-          </Button>
+    <Sheet open={open} onOpenChange={onClose}>
+      <SheetContent side="left" className="w-72 p-0 bg-background border-r">
+        <div className="flex h-16 shrink-0 items-center px-6 border-b">
+          <span className="text-xl font-bold text-foreground">LocalBzz</span>
         </div>
-        <nav className="flex flex-1 flex-col px-6 pb-4">
+        <nav className="flex flex-1 flex-col px-6 py-4">
           <ul role="list" className="flex flex-1 flex-col gap-y-7">
             <li>
               <ul role="list" className="-mx-2 space-y-1">
@@ -57,7 +52,7 @@ export function MobileSidebar({ open, onClose }: MobileSidebarProps) {
             </li>
           </ul>
         </nav>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   )
 }

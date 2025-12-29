@@ -110,6 +110,13 @@ export type Database = {
             foreignKeyName: "tasks_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
+            referencedRelation: "admin_client_pulse"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
@@ -193,6 +200,17 @@ export type Database = {
       }
     }
     Views: {
+      admin_client_pulse: {
+        Row: {
+          id: string | null
+          last_shoot_date: string | null
+          name: string | null
+          needs_shoot: boolean | null
+          package_tier: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
       admin_task_health: {
         Row: {
           asset_link: string | null
@@ -216,6 +234,13 @@ export type Database = {
           workflow_stage: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "tasks_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "admin_client_pulse"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tasks_client_id_fkey"
             columns: ["client_id"]
@@ -375,7 +400,7 @@ export const Constants = {
   },
 } as const
 
-// Convenience types
+// Convenience type aliases
 export type Client = Database['public']['Tables']['clients']['Row']
 export type ClientInsert = Database['public']['Tables']['clients']['Insert']
 export type ClientUpdate = Database['public']['Tables']['clients']['Update']
@@ -388,3 +413,4 @@ export type WorkflowTemplate = Database['public']['Tables']['workflow_templates'
 export type WorkflowStep = Database['public']['Tables']['workflow_steps']['Row']
 
 export type TaskHealth = Database['public']['Views']['admin_task_health']['Row']
+export type ClientPulse = Database['public']['Views']['admin_client_pulse']['Row']
