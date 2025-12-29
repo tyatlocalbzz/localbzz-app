@@ -52,11 +52,11 @@ export function TaskTimeline({ tasks, selectedTaskId, onSelectTask }: TaskTimeli
       groups.get(monthKey)!.push(task)
     })
 
-    // Sort by date descending (newest first)
+    // Sort by date ascending (oldest/overdue first)
     return Array.from(groups.entries()).sort((a, b) => {
       const dateA = new Date(a[1][0].due_date || a[1][0].start_time || a[1][0].created_at || 0)
       const dateB = new Date(b[1][0].due_date || b[1][0].start_time || b[1][0].created_at || 0)
-      return dateB.getTime() - dateA.getTime()
+      return dateA.getTime() - dateB.getTime()
     })
   }, [tasks])
 
