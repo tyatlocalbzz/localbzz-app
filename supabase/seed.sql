@@ -9,42 +9,42 @@
 -- CLIENTS (6 test clients with various statuses)
 -- ==========================================
 
-INSERT INTO clients (id, name, status, package_tier, notes) VALUES
-  -- Active clients
-  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Sunrise Bakery', 'active', 'Premium', 'Local bakery chain, 3 locations. Monthly content for all stores.'),
-  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Peak Fitness Studio', 'active', 'Standard', 'Boutique gym. Focus on transformation stories and class promos.'),
-  ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Verde Garden Center', 'active', 'Premium', 'Garden center with seasonal campaigns. Heavy Q2/Q3.'),
+INSERT INTO clients (id, name, status, package_tier, notes, auto_workflow_enabled, default_template_id) VALUES
+  -- Active clients (with auto-workflow enabled)
+  ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'Sunrise Bakery', 'active', 'Premium', 'Local bakery chain, 3 locations. Monthly content for all stores.', true, '11111111-1111-1111-1111-111111111111'),
+  ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Peak Fitness Studio', 'active', 'Standard', 'Boutique gym. Focus on transformation stories and class promos.', true, '11111111-1111-1111-1111-111111111111'),
+  ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Verde Garden Center', 'active', 'Premium', 'Garden center with seasonal campaigns. Heavy Q2/Q3.', false, NULL),
 
   -- Lead (potential client)
-  ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'Coastal Realty Group', 'lead', NULL, 'Real estate agency interested in property video tours.'),
+  ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'Coastal Realty Group', 'lead', NULL, 'Real estate agency interested in property video tours.', false, NULL),
 
   -- Paused client
-  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'Brew Brothers Coffee', 'paused', 'Standard', 'Paused for renovation. Resuming March 2025.'),
+  ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'Brew Brothers Coffee', 'paused', 'Standard', 'Paused for renovation. Resuming March 2025.', false, NULL),
 
   -- Churned client
-  ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'TechStart Inc', 'churned', 'Basic', 'Moved in-house. Good relationship, may return.');
+  ('ffffffff-ffff-ffff-ffff-ffffffffffff', 'TechStart Inc', 'churned', 'Basic', 'Moved in-house. Good relationship, may return.', false, NULL);
 
 
 -- ==========================================
 -- TASKS - Sunrise Bakery (Active, healthy client)
 -- ==========================================
 
-INSERT INTO tasks (client_id, title, task_type, status, priority, due_date, start_time, location, notes) VALUES
+INSERT INTO tasks (client_id, title, task_type, status, priority, due_date, start_time, location, notes, assigned_to) VALUES
   -- Completed tasks
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'November Content Shoot', 'shoot', 'done', 'normal',
-   NOW() - INTERVAL '30 days', NOW() - INTERVAL '32 days', 'Main Street Location', 'Holiday prep shots completed'),
+   NOW() - INTERVAL '30 days', NOW() - INTERVAL '32 days', 'Main Street Location', 'Holiday prep shots completed', 'placeholder-photographer-id'),
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'November Content Edit', 'deliverable', 'done', 'normal',
-   NOW() - INTERVAL '25 days', NULL, NULL, 'Delivered 45 assets'),
+   NOW() - INTERVAL '25 days', NULL, NULL, 'Delivered 45 assets', 'placeholder-editor-id'),
 
   -- Current month tasks
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'December Content Shoot', 'shoot', 'scheduled', 'normal',
-   NOW() + INTERVAL '5 days', NOW() + INTERVAL '5 days', 'All 3 Locations', 'Holiday season shoot - need extra coverage'),
+   NOW() + INTERVAL '5 days', NOW() + INTERVAL '5 days', 'All 3 Locations', 'Holiday season shoot - need extra coverage', 'placeholder-photographer-id'),
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'December Content Edit', 'deliverable', 'todo', 'normal',
-   NOW() + INTERVAL '12 days', NULL, NULL, NULL),
+   NOW() + INTERVAL '12 days', NULL, NULL, NULL, 'placeholder-editor-id'),
 
   -- Future task
   ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'January Strategy Meeting', 'meeting', 'todo', 'normal',
-   NOW() + INTERVAL '35 days', NOW() + INTERVAL '35 days', 'Zoom', 'Q1 planning session');
+   NOW() + INTERVAL '35 days', NOW() + INTERVAL '35 days', 'Zoom', 'Q1 planning session', 'REPLACE_WITH_YOUR_REAL_USER_ID');
 
 
 -- ==========================================
@@ -62,51 +62,51 @@ INSERT INTO tasks (client_id, title, task_type, status, priority, due_date, star
 
   -- Due soon (Risk - within 48 hours)
   ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Weekly Class Schedule Post', 'deliverable', 'review', 'normal',
-   NOW() + INTERVAL '1 day', NULL, NULL, 'Waiting for client approval', NULL),
+   NOW() + INTERVAL '1 day', NULL, NULL, 'Waiting for client approval', 'placeholder-editor-id'),
 
   -- Normal upcoming
   ('bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', 'Member Spotlight Interview', 'meeting', 'scheduled', 'normal',
-   NOW() + INTERVAL '7 days', NOW() + INTERVAL '7 days', 'Peak Fitness - Room B', 'Interview John D. for testimonial');
+   NOW() + INTERVAL '7 days', NOW() + INTERVAL '7 days', 'Peak Fitness - Room B', 'Interview John D. for testimonial', 'REPLACE_WITH_YOUR_REAL_USER_ID');
 
 
 -- ==========================================
 -- TASKS - Verde Garden Center (Seasonal, some gaps)
 -- ==========================================
 
-INSERT INTO tasks (client_id, title, task_type, status, priority, due_date, start_time, location, notes) VALUES
+INSERT INTO tasks (client_id, title, task_type, status, priority, due_date, start_time, location, notes, assigned_to) VALUES
   -- Past completed
   ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Fall Planting Guide Shoot', 'shoot', 'done', 'normal',
-   NOW() - INTERVAL '45 days', NOW() - INTERVAL '47 days', 'Outdoor Nursery', 'Great weather, got extra B-roll'),
+   NOW() - INTERVAL '45 days', NOW() - INTERVAL '47 days', 'Outdoor Nursery', 'Great weather, got extra B-roll', 'placeholder-photographer-id'),
   ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Fall Planting Guide Edit', 'deliverable', 'done', 'normal',
-   NOW() - INTERVAL '40 days', NULL, NULL, 'Delivered video + 30 stills'),
+   NOW() - INTERVAL '40 days', NULL, NULL, 'Delivered video + 30 stills', 'placeholder-editor-id'),
 
   -- Note: No shoots scheduled for 40+ days = will trigger Ghost Monitor!
 
   -- Future milestone
   ('cccccccc-cccc-cccc-cccc-cccccccccccc', 'Spring Campaign Kickoff', 'milestone', 'todo', 'normal',
-   NOW() + INTERVAL '60 days', NULL, NULL, 'Plan spring content calendar');
+   NOW() + INTERVAL '60 days', NULL, NULL, 'Plan spring content calendar', 'REPLACE_WITH_YOUR_REAL_USER_ID');
 
 
 -- ==========================================
 -- TASKS - Coastal Realty (Lead - opportunity tracking)
 -- ==========================================
 
-INSERT INTO tasks (client_id, title, task_type, status, priority, due_date, start_time, notes) VALUES
+INSERT INTO tasks (client_id, title, task_type, status, priority, due_date, start_time, location, notes, assigned_to) VALUES
   ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'Discovery Call', 'meeting', 'done', 'normal',
-   NOW() - INTERVAL '7 days', NOW() - INTERVAL '7 days', 'Great call, interested in video tours'),
+   NOW() - INTERVAL '7 days', NOW() - INTERVAL '7 days', NULL, 'Great call, interested in video tours', 'REPLACE_WITH_YOUR_REAL_USER_ID'),
   ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'Send Proposal', 'opportunity', 'in_progress', 'high',
-   NOW() + INTERVAL '2 days', NULL, 'Prepare property video package proposal'),
+   NOW() + INTERVAL '2 days', NULL, NULL, 'Prepare property video package proposal', 'REPLACE_WITH_YOUR_REAL_USER_ID'),
   ('dddddddd-dddd-dddd-dddd-dddddddddddd', 'Follow-up Call', 'meeting', 'todo', 'normal',
-   NOW() + INTERVAL '5 days', NOW() + INTERVAL '5 days', 'Discuss proposal and close deal');
+   NOW() + INTERVAL '5 days', NOW() + INTERVAL '5 days', NULL, 'Discuss proposal and close deal', 'REPLACE_WITH_YOUR_REAL_USER_ID');
 
 
 -- ==========================================
 -- TASKS - Brew Brothers (Paused - minimal activity)
 -- ==========================================
 
-INSERT INTO tasks (client_id, title, task_type, status, priority, due_date, notes) VALUES
+INSERT INTO tasks (client_id, title, task_type, status, priority, due_date, start_time, location, notes, assigned_to) VALUES
   ('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', 'Renovation Complete Check-in', 'meeting', 'todo', 'normal',
-   NOW() + INTERVAL '90 days', 'Call to discuss resuming services after renovation');
+   NOW() + INTERVAL '90 days', NULL, NULL, 'Call to discuss resuming services after renovation', 'REPLACE_WITH_YOUR_REAL_USER_ID');
 
 
 -- ==========================================
@@ -120,6 +120,10 @@ INSERT INTO tasks (client_id, title, task_type, status, priority, due_date, note
 --
 -- GHOST MONITOR should show:
 -- 1. Verde Garden Center - No shoots in 45+ days, none scheduled
+--
+-- AUTO-WORKFLOW enabled for:
+-- 1. Sunrise Bakery - Monthly Retainer template
+-- 2. Peak Fitness Studio - Monthly Retainer template
 --
 -- Timeline sorting (ascending) should show:
 -- - Overdue items at top

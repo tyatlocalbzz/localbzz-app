@@ -24,12 +24,12 @@ async function seed() {
   // 1. Insert Clients
   console.log('📁 Creating clients...')
   const clients = [
-    { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', name: 'Sunrise Bakery', status: 'active', package_tier: 'Premium', notes: 'Local bakery chain, 3 locations. Monthly content for all stores.' },
-    { id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', name: 'Peak Fitness Studio', status: 'active', package_tier: 'Standard', notes: 'Boutique gym. Focus on transformation stories and class promos.' },
-    { id: 'cccccccc-cccc-cccc-cccc-cccccccccccc', name: 'Verde Garden Center', status: 'active', package_tier: 'Premium', notes: 'Garden center with seasonal campaigns. Heavy Q2/Q3.' },
-    { id: 'dddddddd-dddd-dddd-dddd-dddddddddddd', name: 'Coastal Realty Group', status: 'lead', package_tier: null, notes: 'Real estate agency interested in property video tours.' },
-    { id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', name: 'Brew Brothers Coffee', status: 'paused', package_tier: 'Standard', notes: 'Paused for renovation. Resuming March 2025.' },
-    { id: 'ffffffff-ffff-ffff-ffff-ffffffffffff', name: 'TechStart Inc', status: 'churned', package_tier: 'Basic', notes: 'Moved in-house. Good relationship, may return.' },
+    { id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', name: 'Sunrise Bakery', status: 'active', package_tier: 'Premium', notes: 'Local bakery chain, 3 locations. Monthly content for all stores.', auto_workflow_enabled: true, default_template_id: '11111111-1111-1111-1111-111111111111' },
+    { id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', name: 'Peak Fitness Studio', status: 'active', package_tier: 'Standard', notes: 'Boutique gym. Focus on transformation stories and class promos.', auto_workflow_enabled: true, default_template_id: '11111111-1111-1111-1111-111111111111' },
+    { id: 'cccccccc-cccc-cccc-cccc-cccccccccccc', name: 'Verde Garden Center', status: 'active', package_tier: 'Premium', notes: 'Garden center with seasonal campaigns. Heavy Q2/Q3.', auto_workflow_enabled: false, default_template_id: null },
+    { id: 'dddddddd-dddd-dddd-dddd-dddddddddddd', name: 'Coastal Realty Group', status: 'lead', package_tier: null, notes: 'Real estate agency interested in property video tours.', auto_workflow_enabled: false, default_template_id: null },
+    { id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', name: 'Brew Brothers Coffee', status: 'paused', package_tier: 'Standard', notes: 'Paused for renovation. Resuming March 2025.', auto_workflow_enabled: false, default_template_id: null },
+    { id: 'ffffffff-ffff-ffff-ffff-ffffffffffff', name: 'TechStart Inc', status: 'churned', package_tier: 'Basic', notes: 'Moved in-house. Good relationship, may return.', auto_workflow_enabled: false, default_template_id: null },
   ]
 
   const { error: clientError } = await supabase.from('clients').upsert(clients, { onConflict: 'id' })
@@ -81,6 +81,7 @@ async function seed() {
   console.log('Test scenarios ready:')
   console.log('  🚨 Red Flags: 3 items (overdue, unassigned, due soon)')
   console.log('  👻 Ghost Monitor: Verde Garden Center (no shoots in 45+ days)')
+  console.log('  🔄 Auto-workflow: Sunrise Bakery, Peak Fitness (Monthly Retainer)')
   console.log('\nRun `npm run dev` to test the app.')
 }
 
