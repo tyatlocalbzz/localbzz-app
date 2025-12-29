@@ -41,9 +41,11 @@ export type Database = {
     Tables: {
       clients: {
         Row: {
+          auto_workflow_enabled: boolean | null
           created_at: string | null
           default_editor_id: string | null
           default_photographer_id: string | null
+          default_template_id: string | null
           id: string
           name: string
           notes: string | null
@@ -51,9 +53,11 @@ export type Database = {
           status: string | null
         }
         Insert: {
+          auto_workflow_enabled?: boolean | null
           created_at?: string | null
           default_editor_id?: string | null
           default_photographer_id?: string | null
+          default_template_id?: string | null
           id?: string
           name: string
           notes?: string | null
@@ -61,16 +65,26 @@ export type Database = {
           status?: string | null
         }
         Update: {
+          auto_workflow_enabled?: boolean | null
           created_at?: string | null
           default_editor_id?: string | null
           default_photographer_id?: string | null
+          default_template_id?: string | null
           id?: string
           name?: string
           notes?: string | null
           package_tier?: string | null
           status?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clients_default_template_id_fkey"
+            columns: ["default_template_id"]
+            isOneToOne: false
+            referencedRelation: "workflow_templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tasks: {
         Row: {
@@ -428,17 +442,23 @@ export const Constants = {
   },
 } as const
 
-// Convenience type aliases
-export type Client = Database['public']['Tables']['clients']['Row']
-export type ClientInsert = Database['public']['Tables']['clients']['Insert']
-export type ClientUpdate = Database['public']['Tables']['clients']['Update']
+// Convenience type exports for direct imports
+export type Client = Tables<'clients'>
+export type ClientInsert = TablesInsert<'clients'>
+export type ClientUpdate = TablesUpdate<'clients'>
 
-export type Task = Database['public']['Tables']['tasks']['Row']
-export type TaskInsert = Database['public']['Tables']['tasks']['Insert']
-export type TaskUpdate = Database['public']['Tables']['tasks']['Update']
+export type Task = Tables<'tasks'>
+export type TaskInsert = TablesInsert<'tasks'>
+export type TaskUpdate = TablesUpdate<'tasks'>
 
-export type WorkflowTemplate = Database['public']['Tables']['workflow_templates']['Row']
-export type WorkflowStep = Database['public']['Tables']['workflow_steps']['Row']
+export type WorkflowTemplate = Tables<'workflow_templates'>
+export type WorkflowTemplateInsert = TablesInsert<'workflow_templates'>
+export type WorkflowTemplateUpdate = TablesUpdate<'workflow_templates'>
 
+export type WorkflowStep = Tables<'workflow_steps'>
+export type WorkflowStepInsert = TablesInsert<'workflow_steps'>
+export type WorkflowStepUpdate = TablesUpdate<'workflow_steps'>
+
+// View types
 export type TaskHealth = Database['public']['Views']['admin_task_health']['Row']
 export type ClientPulse = Database['public']['Views']['admin_client_pulse']['Row']

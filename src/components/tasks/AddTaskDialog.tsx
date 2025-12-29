@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useCreateTask } from '@/hooks/useTasks'
+import { TEAM_MEMBERS } from '@/config/team'
 
 // Form data type
 interface TaskFormData {
@@ -152,20 +153,26 @@ export function AddTaskDialog({ clientId }: AddTaskDialogProps) {
 
             {/* Assigned To - REQUIRED */}
             <div className="space-y-2">
-              <Label htmlFor="assigned_to">
+              <Label>
                 Assigned To <span className="text-red-500">*</span>
               </Label>
-              <Input
-                id="assigned_to"
-                {...register('assigned_to')}
-                placeholder="User UUID (from Supabase Auth)"
-              />
+              <Select
+                onValueChange={(v) => setValue('assigned_to', v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select team member..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {TEAM_MEMBERS.map((member) => (
+                    <SelectItem key={member.id} value={member.id}>
+                      {member.name} ({member.role})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               {errors.assigned_to && (
                 <p className="text-sm text-red-500">{errors.assigned_to.message}</p>
               )}
-              <p className="text-xs text-muted-foreground">
-                Enter the UUID of the user from Supabase Authentication
-              </p>
             </div>
 
             {/* Due Date */}

@@ -1,8 +1,9 @@
-import { useMemo } from 'react'
+import { useMemo, useRef, useEffect } from 'react'
 import { format } from 'date-fns'
 import { Camera, FileText, Users, Flag, Zap, Circle, CheckCircle2, Clock, AlertCircle, LucideIcon } from 'lucide-react'
 import { cn, getHealthStatus, getMonthYear } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import type { Task } from '@/lib/database.types'
 
 interface TaskTimelineProps {
@@ -38,6 +39,9 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 export function TaskTimeline({ tasks, selectedTaskId, onSelectTask }: TaskTimelineProps) {
+  const currentMonthRef = useRef<HTMLDivElement>(null)
+  const currentMonth = getMonthYear(new Date())
+
   // Group tasks by month
   const groupedTasks = useMemo(() => {
     const groups = new Map<string, Task[]>()
@@ -60,25 +64,46 @@ export function TaskTimeline({ tasks, selectedTaskId, onSelectTask }: TaskTimeli
     })
   }, [tasks])
 
+  // Auto-scroll to current month on mount
+  useEffect(() => {
+    if (currentMonthRef.current) {
+      currentMonthRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      })
+    }
+  }, [groupedTasks])
+
   return (
     <div className="h-full overflow-y-auto">
-      {groupedTasks.map(([month, monthTasks]) => (
-        <div key={month}>
-          <div className="sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2 border-b">
-            <h3 className="text-sm font-semibold text-muted-foreground">{month}</h3>
+      {groupedTasks.map(([month, monthTasks]) => {
+        const isCurrentMonth = month === currentMonth
+        return (
+          <div key={month} ref={isCurrentMonth ? currentMonthRef : null}>
+            <div className={cn(
+              "sticky top-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-2 border-b",
+              isCurrentMonth && "border-l-4 border-l-primary bg-primary/5"
+            )}>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-muted-foreground">{month}</h3>
+                {isCurrentMonth && (
+                  <Badge variant="outline" className="text-xs">Now</Badge>
+                )}
+              </div>
+            </div>
+            <div className="divide-y">
+              {monthTasks.map((task) => (
+                <TaskTimelineItem
+                  key={task.id}
+                  task={task}
+                  isSelected={task.id === selectedTaskId}
+                  onClick={() => onSelectTask(task.id)}
+                />
+              ))}
+            </div>
           </div>
-          <div className="divide-y">
-            {monthTasks.map((task) => (
-              <TaskTimelineItem
-                key={task.id}
-                task={task}
-                isSelected={task.id === selectedTaskId}
-                onClick={() => onSelectTask(task.id)}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

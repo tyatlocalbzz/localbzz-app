@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Camera, FileText, Users, Flag, Zap, MapPin, Link as LinkIcon, Save, CheckCircle, SkipForward, LucideIcon } from 'lucide-react'
+import { Camera, FileText, Users, Flag, Zap, MapPin, Link as LinkIcon, Save, CheckCircle, SkipForward, User, LucideIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select'
 import { useUpdateTask } from '@/hooks/useTasks'
 import { formatDate, cn } from '@/lib/utils'
+import { TEAM_MEMBERS, getTeamMember } from '@/config/team'
 import type { Task, TaskUpdate } from '@/lib/database.types'
 
 interface TaskWorkspaceProps {
@@ -129,8 +130,8 @@ export function TaskWorkspace({ task }: TaskWorkspaceProps) {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Status and Priority */}
-        <div className="grid gap-4 sm:grid-cols-2">
+        {/* Status, Priority, and Assignment */}
+        <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
             <Label>Status</Label>
             <Select
@@ -166,6 +167,37 @@ export function TaskWorkspace({ task }: TaskWorkspaceProps) {
                 <SelectItem value="normal">Normal</SelectItem>
                 <SelectItem value="high">High</SelectItem>
                 <SelectItem value="critical">Critical</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Assigned To
+            </Label>
+            <Select
+              value={localTask.assigned_to || ''}
+              onValueChange={async (v) => {
+                setLocalTask((prev) => ({ ...prev, assigned_to: v || null }))
+                await updateTask.mutateAsync({
+                  id: task.id,
+                  assigned_to: v || null,
+                })
+              }}
+            >
+              <SelectTrigger className={!localTask.assigned_to ? 'border-red-300 text-red-500' : ''}>
+                <SelectValue placeholder="Unassigned">
+                  {localTask.assigned_to
+                    ? getTeamMember(localTask.assigned_to)?.name || 'Unknown'
+                    : 'Unassigned'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {TEAM_MEMBERS.map((member) => (
+                  <SelectItem key={member.id} value={member.id}>
+                    {member.name} ({member.role})
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
