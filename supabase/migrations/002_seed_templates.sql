@@ -1,0 +1,53 @@
+-- LocalBzz Agency OS - Seed Workflow Templates
+-- Run this AFTER the initial schema
+
+-- Monthly Retainer Template
+INSERT INTO workflow_templates (id, name, description)
+VALUES (
+    '11111111-1111-1111-1111-111111111111',
+    'Monthly Retainer',
+    'Standard monthly content package: Shoot → Edit → Review → Publish'
+);
+
+INSERT INTO workflow_steps (template_id, step_order, title_template, task_type, assign_role, relative_day_offset, date_anchor, is_dependent_on_step)
+VALUES
+    -- Step 1: Monthly shoot (day 5 of month)
+    ('11111111-1111-1111-1111-111111111111', 1, '{{Month}} Content Shoot', 'shoot', 'default_photographer', 5, 'start_date', NULL),
+
+    -- Step 2: Edit (3 days after shoot)
+    ('11111111-1111-1111-1111-111111111111', 2, '{{Month}} Content Edit', 'deliverable', 'default_editor', 8, 'start_date', 1),
+
+    -- Step 3: Client review (5 days after edit starts)
+    ('11111111-1111-1111-1111-111111111111', 3, '{{Month}} Client Review', 'milestone', 'admin', 13, 'start_date', 2),
+
+    -- Step 4: Publish (end of month)
+    ('11111111-1111-1111-1111-111111111111', 4, '{{Month}} Content Publish', 'deliverable', 'default_editor', 0, 'end_of_month', 3);
+
+
+-- 90-Day Foundations Template
+INSERT INTO workflow_templates (id, name, description)
+VALUES (
+    '22222222-2222-2222-2222-222222222222',
+    '90-Day Foundations',
+    'Onboarding program: Strategy → 3 shoots with edits → Final review'
+);
+
+INSERT INTO workflow_steps (template_id, step_order, title_template, task_type, assign_role, relative_day_offset, date_anchor, is_dependent_on_step)
+VALUES
+    -- Step 1: Strategy session (day 0)
+    ('22222222-2222-2222-2222-222222222222', 1, 'Strategy & Brand Discovery', 'meeting', 'admin', 0, 'start_date', NULL),
+
+    -- Step 2: First shoot (day 14)
+    ('22222222-2222-2222-2222-222222222222', 2, 'Foundation Shoot 1', 'shoot', 'default_photographer', 14, 'start_date', 1),
+
+    -- Step 3: First edit (day 21)
+    ('22222222-2222-2222-2222-222222222222', 3, 'Foundation Edit 1', 'deliverable', 'default_editor', 21, 'start_date', 2),
+
+    -- Step 4: Second shoot (day 45)
+    ('22222222-2222-2222-2222-222222222222', 4, 'Foundation Shoot 2', 'shoot', 'default_photographer', 45, 'start_date', 3),
+
+    -- Step 5: Second edit (day 52)
+    ('22222222-2222-2222-2222-222222222222', 5, 'Foundation Edit 2', 'deliverable', 'default_editor', 52, 'start_date', 4),
+
+    -- Step 6: Final review (day 85)
+    ('22222222-2222-2222-2222-222222222222', 6, '90-Day Review & Handoff', 'milestone', 'admin', 85, 'start_date', 5);
