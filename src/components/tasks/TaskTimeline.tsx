@@ -4,12 +4,14 @@ import { Camera, FileText, Users, Flag, Zap, Circle, CheckCircle2, Clock, AlertC
 import { cn, getHealthStatus, getMonthYear } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import type { Task } from '@/lib/database.types'
+import { WorkflowStepper } from '@/components/workflows/WorkflowStepper'
+import type { Task, ClientPhase } from '@/lib/database.types'
 
 interface TaskTimelineProps {
   tasks: Task[]
   selectedTaskId: string | null
   onSelectTask: (id: string) => void
+  clientPhase?: ClientPhase | null
 }
 
 const TASK_TYPE_ICONS: Record<string, LucideIcon> = {
@@ -38,9 +40,10 @@ const STATUS_COLORS: Record<string, string> = {
   skipped: 'text-gray-300',
 }
 
-export function TaskTimeline({ tasks, selectedTaskId, onSelectTask }: TaskTimelineProps) {
+export function TaskTimeline({ tasks, selectedTaskId, onSelectTask, clientPhase }: TaskTimelineProps) {
   const currentMonthRef = useRef<HTMLDivElement>(null)
   const currentMonth = getMonthYear(new Date())
+  const useWorkflowView = clientPhase === 'monthly'
 
   // Group tasks by month
   const groupedTasks = useMemo(() => {
@@ -91,16 +94,24 @@ export function TaskTimeline({ tasks, selectedTaskId, onSelectTask }: TaskTimeli
                 )}
               </div>
             </div>
-            <div className="divide-y">
-              {monthTasks.map((task) => (
-                <TaskTimelineItem
-                  key={task.id}
-                  task={task}
-                  isSelected={task.id === selectedTaskId}
-                  onClick={() => onSelectTask(task.id)}
-                />
-              ))}
-            </div>
+            {useWorkflowView ? (
+              <WorkflowStepper
+                tasks={monthTasks}
+                selectedTaskId={selectedTaskId}
+                onSelectTask={onSelectTask}
+              />
+            ) : (
+              <div className="divide-y">
+                {monthTasks.map((task) => (
+                  <TaskTimelineItem
+                    key={task.id}
+                    task={task}
+                    isSelected={task.id === selectedTaskId}
+                    onClick={() => onSelectTask(task.id)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )
       })}

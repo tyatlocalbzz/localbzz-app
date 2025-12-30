@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useClient } from '@/hooks/useClients'
 import { useTasks } from '@/hooks/useTasks'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -12,6 +13,7 @@ import { useAutoGenerateTasks } from '@/hooks/useAutoGenerateTasks'
 import { TaskTimeline } from '@/components/tasks/TaskTimeline'
 import { TaskWorkspace } from '@/components/tasks/TaskWorkspace'
 import { AddTaskDialog } from '@/components/tasks/AddTaskDialog'
+import { ClientDocumentsView } from '@/components/clients/ClientDocumentsView'
 import type { ClientPhase } from '@/lib/database.types'
 
 const PHASE_CONFIG: Record<ClientPhase, { label: string; icon: typeof Rocket; className: string }> = {
@@ -45,6 +47,8 @@ export function ClientDetail() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   // Mobile: track whether we're viewing the list or detail
   const [mobileView, setMobileView] = useState<'list' | 'detail'>('list')
+  // Tab state for desktop view
+  const [activeTab, setActiveTab] = useState<'tasks' | 'documents'>('tasks')
 
   // Set initial selected task from URL or first task
   useEffect(() => {
@@ -200,6 +204,7 @@ export function ClientDetail() {
                 tasks={tasks}
                 selectedTaskId={selectedTaskId}
                 onSelectTask={handleSelectTask}
+                clientPhase={client.client_phase}
               />
             ) : (
               <div className="p-8 text-center text-muted-foreground">
@@ -270,56 +275,79 @@ export function ClientDetail() {
         </div>
       </div>
 
-      {/* Split View Layout */}
-      <div className="grid gap-6 lg:grid-cols-5">
-        {/* Left: Timeline */}
-        <div className="lg:col-span-2">
-          <Card className="h-[calc(100vh-220px)]">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg">Timeline</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0 h-[calc(100%-60px)] overflow-hidden">
-              {tasksLoading ? (
-                <div className="p-4 space-y-3">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Skeleton key={i} className="h-16" />
-                  ))}
-                </div>
-              ) : tasks && tasks.length > 0 ? (
-                <TaskTimeline
-                  tasks={tasks}
-                  selectedTaskId={selectedTaskId}
-                  onSelectTask={setSelectedTaskId}
-                />
-              ) : (
-                <div className="p-8 text-center text-muted-foreground">
-                  <Calendar className="mx-auto h-12 w-12 opacity-50" />
-                  <p className="mt-4">No tasks yet</p>
-                  <p className="text-sm">Add a task to get started</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+      {/* Tabs */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'tasks' | 'documents')}>
+        <TabsList>
+          <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="documents">Documents</TabsTrigger>
+        </TabsList>
 
-        {/* Right: Workspace */}
-        <div className="lg:col-span-3">
-          <Card className="h-[calc(100vh-220px)] overflow-hidden">
-            <CardContent className="p-0 h-full">
-              {selectedTask ? (
-                <TaskWorkspace task={selectedTask} />
-              ) : (
-                <div className="h-full flex items-center justify-center text-muted-foreground">
-                  <div className="text-center">
-                    <FileText className="mx-auto h-12 w-12 opacity-50" />
-                    <p className="mt-4">Select a task to view details</p>
-                  </div>
-                </div>
-              )}
+        {/* Tasks Tab - Split View Layout */}
+        <TabsContent value="tasks" className="mt-4">
+          <div className="grid gap-6 lg:grid-cols-5">
+            {/* Left: Timeline */}
+            <div className="lg:col-span-2">
+              <Card className="h-[calc(100vh-280px)]">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Timeline</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 h-[calc(100%-60px)] overflow-hidden">
+                  {tasksLoading ? (
+                    <div className="p-4 space-y-3">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <Skeleton key={i} className="h-16" />
+                      ))}
+                    </div>
+                  ) : tasks && tasks.length > 0 ? (
+                    <TaskTimeline
+                      tasks={tasks}
+                      selectedTaskId={selectedTaskId}
+                      onSelectTask={setSelectedTaskId}
+                      clientPhase={client.client_phase}
+                    />
+                  ) : (
+                    <div className="p-8 text-center text-muted-foreground">
+                      <Calendar className="mx-auto h-12 w-12 opacity-50" />
+                      <p className="mt-4">No tasks yet</p>
+                      <p className="text-sm">Add a task to get started</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Right: Workspace */}
+            <div className="lg:col-span-3">
+              <Card className="h-[calc(100vh-280px)] overflow-hidden">
+                <CardContent className="p-0 h-full">
+                  {selectedTask ? (
+                    <TaskWorkspace task={selectedTask} />
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-muted-foreground">
+                      <div className="text-center">
+                        <FileText className="mx-auto h-12 w-12 opacity-50" />
+                        <p className="mt-4">Select a task to view details</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </TabsContent>
+
+        {/* Documents Tab */}
+        <TabsContent value="documents" className="mt-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Documents</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ClientDocumentsView clientId={id!} />
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

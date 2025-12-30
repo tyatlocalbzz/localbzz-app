@@ -99,6 +99,7 @@ export type Database = {
           due_date: string | null
           end_time: string | null
           id: string
+          internal_notes: string | null
           location: string | null
           notes: string | null
           parent_id: string | null
@@ -107,6 +108,7 @@ export type Database = {
           status: string | null
           task_type: string
           title: string
+          transcript_path: string | null
           workflow_stage: string | null
         }
         Insert: {
@@ -118,6 +120,7 @@ export type Database = {
           due_date?: string | null
           end_time?: string | null
           id?: string
+          internal_notes?: string | null
           location?: string | null
           notes?: string | null
           parent_id?: string | null
@@ -126,6 +129,7 @@ export type Database = {
           status?: string | null
           task_type: string
           title: string
+          transcript_path?: string | null
           workflow_stage?: string | null
         }
         Update: {
@@ -137,6 +141,7 @@ export type Database = {
           due_date?: string | null
           end_time?: string | null
           id?: string
+          internal_notes?: string | null
           location?: string | null
           notes?: string | null
           parent_id?: string | null
@@ -145,6 +150,7 @@ export type Database = {
           status?: string | null
           task_type?: string
           title?: string
+          transcript_path?: string | null
           workflow_stage?: string | null
         }
         Relationships: [

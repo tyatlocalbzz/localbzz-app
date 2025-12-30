@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Camera, FileText, Users, Flag, Zap, MapPin, Link as LinkIcon, Save, CheckCircle, SkipForward, User, LucideIcon } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Camera, FileText, Users, Flag, Zap, MapPin, Link as LinkIcon, Save, CheckCircle, SkipForward, User, LucideIcon, Upload, File, ExternalLink, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useUpdateTask } from '@/hooks/useTasks'
+import { supabase } from '@/lib/supabase'
 import { formatDate, cn } from '@/lib/utils'
 import { TEAM_MEMBERS, getTeamMember } from '@/config/team'
 import type { Task, TaskUpdate } from '@/lib/database.types'
@@ -41,14 +42,20 @@ const TASK_TYPE_LABELS: Record<string, string> = {
 export function TaskWorkspace({ task }: TaskWorkspaceProps) {
   const updateTask = useUpdateTask()
   const TypeIcon = TASK_TYPE_ICONS[task.task_type] || FileText
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [localTask, setLocalTask] = useState(task)
   const [isDirty, setIsDirty] = useState(false)
+  const [internalNotes, setInternalNotes] = useState(task.internal_notes || '')
+  const [internalNotesDirty, setInternalNotesDirty] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
 
   // Reset local state when task changes
   useEffect(() => {
     setLocalTask(task)
+    setInternalNotes(task.internal_notes || '')
     setIsDirty(false)
+    setInternalNotesDirty(false)
   }, [task.id])
 
   const handleFieldChange = useCallback((field: keyof TaskUpdate, value: string | null) => {
@@ -83,6 +90,57 @@ export function TaskWorkspace({ task }: TaskWorkspaceProps) {
 
   const handleMarkComplete = () => handleStatusChange('done')
   const handleSkip = () => handleStatusChange('skipped')
+
+  // Save internal notes
+  const handleSaveInternalNotes = async () => {
+    if (!internalNotesDirty) return
+    await updateTask.mutateAsync({
+      id: task.id,
+      internal_notes: internalNotes || null,
+    })
+    setInternalNotesDirty(false)
+  }
+
+  // Handle file upload
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    try {
+      const clientId = task.client_id || 'unknown'
+      const filePath = `${clientId}/${task.id}/${file.name}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('task-attachments')
+        .upload(filePath, file, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      // Save the path to the task
+      await updateTask.mutateAsync({
+        id: task.id,
+        transcript_path: filePath,
+      })
+      setLocalTask((prev) => ({ ...prev, transcript_path: filePath }))
+    } catch (error) {
+      console.error('Upload failed:', error)
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    }
+  }
+
+  // Get public URL for transcript
+  const getTranscriptUrl = () => {
+    if (!localTask.transcript_path) return null
+    const { data } = supabase.storage
+      .from('task-attachments')
+      .getPublicUrl(localTask.transcript_path)
+    return data.publicUrl
+  }
 
   return (
     <div className="h-full flex flex-col">
@@ -301,10 +359,94 @@ export function TaskWorkspace({ task }: TaskWorkspaceProps) {
             onChange={(e) => handleFieldChange('notes', e.target.value || null)}
             onBlur={handleBlur}
             placeholder="Add notes, feedback, or communication here..."
-            className="min-h-[150px] resize-none"
+            className="min-h-[120px] resize-none"
           />
           <p className="text-xs text-muted-foreground">
             Notes auto-save when you click outside the field
+          </p>
+        </div>
+
+        <Separator />
+
+        {/* Internal Notes - Team Only */}
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2">
+            <File className="h-4 w-4" />
+            Internal Notes
+            <Badge variant="secondary" className="text-xs">Team Only</Badge>
+          </Label>
+          <Textarea
+            value={internalNotes}
+            onChange={(e) => {
+              setInternalNotes(e.target.value)
+              setInternalNotesDirty(true)
+            }}
+            placeholder="Private team notes, reminders, or context..."
+            className="min-h-[100px] resize-none"
+          />
+          <div className="flex items-center justify-between">
+            <p className="text-xs text-muted-foreground">
+              These notes are not visible to clients
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleSaveInternalNotes}
+              disabled={!internalNotesDirty || updateTask.isPending}
+            >
+              <Save className="mr-2 h-3 w-3" />
+              {updateTask.isPending ? 'Saving...' : 'Save Notes'}
+            </Button>
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* Transcript Upload */}
+        <div className="space-y-3">
+          <Label className="flex items-center gap-2">
+            <Upload className="h-4 w-4" />
+            Transcript / Document
+          </Label>
+
+          {/* Show existing transcript */}
+          {localTask.transcript_path && (
+            <div className="flex items-center gap-2 p-3 bg-secondary rounded-md">
+              <File className="h-5 w-5 text-muted-foreground" />
+              <span className="flex-1 text-sm truncate">
+                {localTask.transcript_path.split('/').pop()}
+              </span>
+              <a
+                href={getTranscriptUrl() || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-blue-500 hover:underline flex items-center gap-1"
+              >
+                <ExternalLink className="h-3 w-3" />
+                View
+              </a>
+            </div>
+          )}
+
+          {/* Upload input */}
+          <div className="flex items-center gap-2">
+            <Input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.txt,.doc,.docx"
+              onChange={handleFileUpload}
+              disabled={isUploading}
+              className="flex-1"
+            />
+            {isUploading && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Uploading...
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Upload meeting transcripts, briefs, or reference documents (PDF, TXT, DOC)
           </p>
         </div>
       </div>
